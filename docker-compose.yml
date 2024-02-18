@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  postgresdb: # Banco de dados
+    image: postgres:alpine
+    container_name: postgres
+    hostname: postgres
+    network_mode: host
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: root
+    command: postgres -c max_connections=400 -c log_min_messages=FATAL -c log_min_error_statement=FATAL
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 10s
+      retries: 2
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: '0.5GB'
