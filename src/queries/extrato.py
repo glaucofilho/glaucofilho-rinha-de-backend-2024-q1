@@ -1,7 +1,7 @@
 from sqlalchemy import text
 
 CONSULTA_SALDO_SQL = text(
-    "SELECT limite, fatura FROM clientes c WHERE c.id = :id LIMIT 1"
+    "SELECT limite, montante FROM clientes c WHERE c.id = :id LIMIT 1"
 )
 
 

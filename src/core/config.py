@@ -13,11 +13,11 @@ class Settings(BaseSettings):
 
     db_user: str = "root"
     db_pass: str = "1234"
-    db_address: str = "postgres"
+    db_address: str = "localhost"
     db_port: int = 5432
     db_name: str = "root"
 
-    log_level: str = "CRITICAL"
+    log_level: str = "ERROR"
 
     DBBaseModel: ClassVar = declarative_base()
 

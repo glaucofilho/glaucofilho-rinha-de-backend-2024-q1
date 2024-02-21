@@ -9,8 +9,8 @@ services:
     ports:
       - "5050:80"
     volumes:
-      - pgadmin_data:/root/.pgadmin
+      - pgadmin_data_glauco_filho:/root/.pgadmin
     restart: always
 
 volumes:
-  pgadmin_data:
+  pgadmin_data_glauco_filho:

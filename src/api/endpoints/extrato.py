@@ -31,9 +31,9 @@ async def get_extrato(cliente_id: int):
                     "id": cliente_id,
                 },
             )
-            limite, fatura = result.fetchone()
+            limite, montante = result.fetchone()
             return ExtratoSchema(
-                saldo=SaldoSchema(limite=limite, total=fatura),
+                saldo=SaldoSchema(limite=limite, total=montante),
                 ultimas_transacoes=transacoes,
             )
     except NoResultFound:

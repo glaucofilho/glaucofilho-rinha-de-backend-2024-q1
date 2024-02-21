@@ -28,3 +28,5 @@
 17. cd ./stress-test/
 17. sudo chmod +x executar-teste-local.sh
 18. sudo ./executar-teste-local.sh
+19. sudo docker build -t glaucolmf/rinhabackend_2024:v.0.1.0 .
+20. sudo docker push glaucolmf/rinhabackend_2024:v.0.1.0

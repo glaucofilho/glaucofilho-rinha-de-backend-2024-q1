@@ -10,7 +10,7 @@ class ClienteSchema(BaseModel):
         examples=[80000],
         description="Limite de credito em centavos do cliente.",
     )
-    fatura: int = Field(
+    montante: int = Field(
         examples=[-25000],
-        description="Fatura de credito em centavos do cliente.",
+        description="Montante em centavos do cliente.",
     )

@@ -8,7 +8,7 @@ CREATE TABLE public.clientes (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(22) UNIQUE,
     limite INTEGER,
-    fatura INTEGER
+    montante INTEGER
 );
 
 CREATE TABLE public.transacoes (
@@ -27,10 +27,10 @@ BEGIN
     IF NOT FOUND THEN
         RAISE EXCEPTION 'NOUSER';
     END IF;
-    IF (SELECT limite + fatura FROM public.clientes WHERE id = NEW.cliente_id) < NEW.valor THEN
+    IF NEW.tipo = 'd' AND (SELECT montante + limite FROM public.clientes WHERE id = NEW.cliente_id) < - NEW.valor THEN
         RAISE EXCEPTION 'NOLIMIT';
     ELSE
-        UPDATE public.clientes SET fatura = fatura - NEW.valor WHERE id = NEW.cliente_id;
+        UPDATE public.clientes SET montante = montante + NEW.valor WHERE id = NEW.cliente_id;
     END IF;
     RETURN NEW;
 END;
@@ -41,9 +41,14 @@ BEFORE INSERT ON public.transacoes
 FOR EACH ROW
 EXECUTE FUNCTION verificar_limite_transacao();
 
+
+CREATE INDEX idx_transacoes_cliente_id ON public.transacoes(cliente_id);
+
+CREATE INDEX idx_transacoes_realizada_em ON public.transacoes(realizada_em);
+
 DO $$
 BEGIN
-  INSERT INTO public.clientes (nome, limite, fatura)
+  INSERT INTO public.clientes (nome, limite, montante)
   VALUES
     ('o barato sai caro', 1000 * 100, 0),
     ('zan corp ltda', 800 * 100, 0),

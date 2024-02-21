@@ -1,15 +1,16 @@
 version: '3.9'
 services:
-  postgresdb: # Banco de dados
+
+  postgres: # Banco de dados
     image: postgres:alpine
     container_name: postgres
-    hostname: postgres
+    # hostname: postgres
     network_mode: host
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: root
-    command: postgres -c max_connections=400 -c log_min_messages=FATAL -c log_min_error_statement=FATAL
+    command: postgres -c max_connections=400 -c log_min_messages=FATAL -c log_min_error_statement=FATAL -c listen_addresses='*'
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
@@ -23,3 +24,51 @@ services:
         limits:
           cpus: '1.0'
           memory: '0.5GB'
+
+
+  api1: # API - Instância 01
+    image: glaucolmf/rinhabackend_2024:v.0.1.0
+    # hostname: api1
+    network_mode: host
+    environment:
+      API_PORT: 8001
+      WORKERS: 2
+      LOG_LEVEL: INFO
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '0.45'
+          memory: '0.4GB'
+
+  api2: # API - Instância 01
+    image: glaucolmf/rinhabackend_2024:v.0.1.0
+    # hostname: api2
+    network_mode: host
+    environment:
+      API_PORT: 8002
+      LOG_LEVEL: INFO
+      WORKERS: 2
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '0.45'
+          memory: '0.4GB'
+
+  nginx: # Load Balancer
+    image: nginx:1.25-alpine-slim
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api1
+      - api2
+    # hostname: nginx
+    network_mode: host
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: '0.1GB'

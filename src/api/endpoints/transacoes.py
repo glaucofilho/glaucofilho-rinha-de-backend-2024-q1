@@ -9,11 +9,13 @@ router = APIRouter()
 
 
 @router.post(
-    "/clientes/{cliente_id}/transacoes", response_model=TransacaoOutputSchema
+    "/clientes/{cliente_id}/transacoes"  # , response_model=TransacaoOutputSchema
 )
 async def post_transacao(cliente_id: int, transacao: TransacaoInputSchema):
     try:
         async with get_database_session() as session:
+            if transacao.tipo == "d":
+                transacao.valor = -transacao.valor
             result = await session.execute(
                 INSERIR_TRANSACAO_SQL,
                 {

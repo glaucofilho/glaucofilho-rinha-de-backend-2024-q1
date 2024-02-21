@@ -6,6 +6,6 @@ INSERIR_TRANSACAO_SQL = text(
     "    VALUES (:cliente_id, :valor, :descricao, :tipo) "
     "    RETURNING cliente_id"
     ") "
-    "SELECT c.limite, c.fatura - :valor AS nova_fatura "
+    "SELECT c.limite, c.montante + :valor AS nova_montante "
     "FROM clientes c WHERE c.id = :cliente_id"
 )

@@ -12,4 +12,4 @@ class ClientesModel(settings.DBBaseModel):
     )
     nome = Column(VARCHAR(22), unique=True)
     limite = Column(Integer)
-    fatura = Column(Integer)
+    montante = Column(Integer)
