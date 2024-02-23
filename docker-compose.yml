@@ -22,8 +22,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: '0.5GB'
+          cpus: '0.55'
+          memory: '300MB'
 
 
   api1: # API - Instância 01
@@ -33,14 +33,14 @@ services:
     environment:
       API_PORT: 8001
       WORKERS: 2
-      LOG_LEVEL: INFO
+      LOG_LEVEL: ERROR
     depends_on:
       - postgres
     deploy:
       resources:
         limits:
-          cpus: '0.45'
-          memory: '0.4GB'
+          cpus: '0.425'
+          memory: '100MB'
 
   api2: # API - Instância 01
     image: glaucolmf/rinhabackend_2024:v.0.2.0
@@ -48,15 +48,15 @@ services:
     network_mode: host
     environment:
       API_PORT: 8002
-      LOG_LEVEL: INFO
+      LOG_LEVEL: ERROR
       WORKERS: 2
     depends_on:
       - postgres
     deploy:
       resources:
         limits:
-          cpus: '0.45'
-          memory: '0.4GB'
+          cpus: '0.425'
+          memory: '100MB'
 
   nginx: # Load Balancer
     image: nginx:1.25-alpine-slim
@@ -70,5 +70,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.15'
-          memory: '0.1GB'
+          cpus: '0.1'
+          memory: '50MB'
