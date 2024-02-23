@@ -15,7 +15,8 @@ app = FastAPI(
     redoc_url=redoc_url,
     default_response_class=ORJSONResponse,
 )
-app.add_middleware(DebugParamsMiddleware)
+if settings.debug_mode:
+    app.add_middleware(DebugParamsMiddleware)
 app.include_router(api_router, prefix="")
 
 logging.getLogger("fastapi").setLevel(settings.log_level)

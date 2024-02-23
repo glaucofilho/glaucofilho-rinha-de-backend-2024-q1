@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     acess_logs: bool = False
     log_level: str = "ERROR"
+    debug_mode: bool = False
 
     DBBaseModel: ClassVar = declarative_base()
 

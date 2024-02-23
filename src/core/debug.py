@@ -1,6 +1,4 @@
-import asyncio
 import json
-from typing import Callable
 
 from starlette.middleware.base import (
     BaseHTTPMiddleware,
