@@ -20,26 +20,96 @@ CREATE TABLE public.transacoes (
     tipo CHAR(1)
 );
 
-CREATE OR REPLACE FUNCTION verificar_limite_transacao()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION inserir_credito(cliente_id INT, valor INT, descricao VARCHAR)
+RETURNS TABLE(novo_montante INT, cliente_limite INT) AS $$
+DECLARE
+    var_novo_montante INT;
+    var_cliente_limite INT;
 BEGIN
-    PERFORM 1 FROM public.clientes WHERE id = NEW.cliente_id FOR UPDATE;
-    IF NOT FOUND THEN
+
+    -- Verifica se o cliente existe
+    IF NOT EXISTS (SELECT 1 FROM public.clientes WHERE id = cliente_id) THEN
         RAISE EXCEPTION 'NOUSER';
     END IF;
-    IF NEW.tipo = 'd' AND (SELECT montante + limite FROM public.clientes WHERE id = NEW.cliente_id) < - NEW.valor THEN
-        RAISE EXCEPTION 'NOLIMIT';
-    ELSE
-        UPDATE public.clientes SET montante = montante + NEW.valor WHERE id = NEW.cliente_id;
-    END IF;
-    RETURN NEW;
+
+    -- Obtém um bloqueio exclusivo para o cliente
+    PERFORM pg_advisory_xact_lock(cliente_id);
+
+    -- Insere a transação de crédito
+    INSERT INTO public.transacoes (cliente_id, valor, descricao, tipo)
+    VALUES (cliente_id, valor, descricao, 'c');
+
+    -- Atualiza o saldo do cliente e retorna montante e limite
+    UPDATE public.clientes
+    SET montante = montante + valor
+    WHERE id = cliente_id
+    RETURNING montante, limite INTO var_novo_montante, var_cliente_limite;
+
+    -- Retorna os valores
+    RETURN QUERY SELECT var_novo_montante, var_cliente_limite;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER verificar_limite_antes_inserir_transacao
-BEFORE INSERT ON public.transacoes
-FOR EACH ROW
-EXECUTE FUNCTION verificar_limite_transacao();
+
+
+
+CREATE OR REPLACE FUNCTION inserir_debito(cliente_id INT, valor INT, descricao VARCHAR)
+RETURNS TABLE(novo_montante INT, cliente_limite INT) AS $$
+DECLARE
+    var_novo_montante INT;
+    var_cliente_limite INT;
+BEGIN
+    -- Verifica se o cliente existe
+    IF NOT EXISTS (SELECT 1 FROM public.clientes WHERE id = cliente_id) THEN
+        RAISE EXCEPTION 'NOUSER';
+    END IF;
+
+    -- Obtém um bloqueio exclusivo para o cliente
+    PERFORM pg_advisory_xact_lock(cliente_id);
+
+    -- Verifica se o cliente tem saldo suficiente
+    IF NOT EXISTS (
+        SELECT 1 FROM public.clientes
+        WHERE id = cliente_id AND montante - valor >= -limite
+    ) THEN
+        RAISE EXCEPTION 'NOLIMIT';
+    END IF;
+
+    -- Insere a transação de débito
+    INSERT INTO public.transacoes (cliente_id, valor, descricao, tipo)
+    VALUES (cliente_id, valor, descricao, 'd'); -- Note o valor negativo
+
+    -- Atualiza o saldo do cliente e retorna montante e limite
+    UPDATE public.clientes
+    SET montante = montante - valor
+    WHERE id = cliente_id
+    RETURNING montante, limite INTO var_novo_montante, var_cliente_limite;
+
+    -- Retorna os valores
+    RETURN QUERY SELECT var_novo_montante, var_cliente_limite;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION obter_ultimas_transacoes(var_cliente_id INT)
+RETURNS TABLE(valor INT, tipo CHAR, descricao VARCHAR, realizada_em TIMESTAMP, montante INT, limite INT) AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM public.clientes WHERE id = var_cliente_id) THEN
+        RAISE EXCEPTION 'NOUSER';
+    END IF;
+
+    PERFORM pg_advisory_xact_lock(var_cliente_id);
+
+    RETURN QUERY 
+    SELECT t.valor, t.tipo, t.descricao, t.realizada_em, c.montante, c.limite
+    FROM public.transacoes t
+    JOIN public.clientes c ON t.cliente_id = c.id
+    WHERE t.cliente_id = var_cliente_id
+    ORDER BY t.id DESC
+    LIMIT 10;
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 
 CREATE INDEX idx_transacoes_cliente_id ON public.transacoes(cliente_id);

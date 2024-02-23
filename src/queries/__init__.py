@@ -1,3 +1,7 @@
-from .clientes import CONSULTA_CLIENTE_SQL, CONSULTA_CLIENTES_SQL
-from .extrato import CONSULTA_SALDO_SQL, CONSULTA_TRANSACOES_SQL
-from .transacoes import INSERIR_TRANSACAO_SQL
+from .clientes import (
+    CONSULTA_CLIENTE_SQL,
+    CONSULTA_CLIENTES_SQL,
+    CONSULTA_LIMITES_SQL,
+)
+from .extrato import CONSULTA_EXTRATO_SQL
+from .transacoes import INSERIR_CREDITO_SQL, INSERIR_DEBITO_SQL

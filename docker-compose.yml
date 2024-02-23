@@ -27,7 +27,7 @@ services:
 
 
   api1: # API - Instância 01
-    image: glaucolmf/rinhabackend_2024:v.0.1.0
+    image: glaucolmf/rinhabackend_2024:v.0.2.0
     # hostname: api1
     network_mode: host
     environment:
@@ -43,7 +43,7 @@ services:
           memory: '0.4GB'
 
   api2: # API - Instância 01
-    image: glaucolmf/rinhabackend_2024:v.0.1.0
+    image: glaucolmf/rinhabackend_2024:v.0.2.0
     # hostname: api2
     network_mode: host
     environment:

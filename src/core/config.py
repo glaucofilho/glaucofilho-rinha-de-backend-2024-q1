@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     db_port: int = 5432
     db_name: str = "root"
 
+    acess_logs: bool = False
     log_level: str = "ERROR"
 
     DBBaseModel: ClassVar = declarative_base()

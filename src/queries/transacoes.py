@@ -1,11 +1,9 @@
 from sqlalchemy import text
 
-INSERIR_TRANSACAO_SQL = text(
-    "WITH nova_transacao AS ("
-    "    INSERT INTO transacoes (cliente_id, valor, descricao, tipo) "
-    "    VALUES (:cliente_id, :valor, :descricao, :tipo) "
-    "    RETURNING cliente_id"
-    ") "
-    "SELECT c.limite, c.montante + :valor AS nova_montante "
-    "FROM clientes c WHERE c.id = :cliente_id"
+INSERIR_DEBITO_SQL = text(
+    "SELECT * FROM inserir_debito(:cliente_id, :valor, :descricao)"
+)
+
+INSERIR_CREDITO_SQL = text(
+    "SELECT * FROM inserir_credito(:cliente_id, :valor, :descricao)"
 )

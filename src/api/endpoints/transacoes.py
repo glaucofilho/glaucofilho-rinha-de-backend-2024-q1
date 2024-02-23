@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from fastapi.responses import Response
 from sqlalchemy.exc import IllegalStateChangeError, NoResultFound
 
 from core import get_database_session
-from queries import INSERIR_TRANSACAO_SQL
+from queries import INSERIR_CREDITO_SQL, INSERIR_DEBITO_SQL
 from schemas import TransacaoInputSchema, TransacaoOutputSchema
 
 router = APIRouter()
@@ -15,20 +16,27 @@ async def post_transacao(cliente_id: int, transacao: TransacaoInputSchema):
     try:
         async with get_database_session() as session:
             if transacao.tipo == "d":
-                transacao.valor = -transacao.valor
-            result = await session.execute(
-                INSERIR_TRANSACAO_SQL,
-                {
-                    "cliente_id": cliente_id,
-                    "valor": transacao.valor,
-                    "descricao": transacao.descricao,
-                    "tipo": transacao.tipo,
-                },
-            )
+                result = await session.execute(
+                    INSERIR_DEBITO_SQL,
+                    {
+                        "cliente_id": cliente_id,
+                        "valor": transacao.valor,
+                        "descricao": transacao.descricao,
+                    },
+                )
+            else:
+                result = await session.execute(
+                    INSERIR_CREDITO_SQL,
+                    {
+                        "cliente_id": cliente_id,
+                        "valor": transacao.valor,
+                        "descricao": transacao.descricao,
+                    },
+                )
             await session.commit()
-            limite, saldo = result.fetchone()
+            saldo, limite = result.fetchone()
             return TransacaoOutputSchema(limite=limite, saldo=saldo)
     except NoResultFound:
-        raise HTTPException(404)
+        return Response(status_code=404)
     except IllegalStateChangeError:
-        raise HTTPException(422)
+        return Response(status_code=422)
