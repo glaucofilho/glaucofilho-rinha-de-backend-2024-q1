@@ -10,6 +10,18 @@ from core import DatabaseSession
 
 @asynccontextmanager
 async def get_database_session() -> AsyncGenerator:
+    """
+    Gerenciador de contexto assíncrono para obter uma sessão do banco de dados.
+
+    Esta função cria uma sessão do banco de dados usando a configuração definida em DatabaseSession,
+    e retorna essa sessão. Se ocorrer uma exceção durante o uso da sessão, a função trata
+    exceções específicas, como NoResultFound e IllegalStateChangeError, e registra outras exceções
+    usando o módulo logging. A sessão é fechada após o uso.
+
+    Retorna:
+    - AsyncGenerator: Um gerador assíncrono que produz a sessão do banco de dados.
+
+    """
     session: AsyncSession = DatabaseSession()
 
     try:

@@ -1,32 +1,43 @@
+-- Define o esquema de busca padrão para 'public'
 SET search_path = public;
+
+-- Define a codificação do cliente para UTF-8
 SET client_encoding = 'UTF8';
+
+-- Define as opções de XML para conteúdo
 SET xmloption = content;
+
+-- Define o nível mínimo de mensagens do cliente
 SET client_min_messages = warning;
-SET row_security = off;
 
+-- Desativa a segurança de linha
+-- SET row_security = off;
+
+-- Cria a tabela 'clientes' no esquema 'public'
 CREATE TABLE public.clientes (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(22) UNIQUE,
-    limite INTEGER,
-    montante INTEGER
+    id SERIAL PRIMARY KEY,  -- Coluna para o ID do cliente, usando SERIAL para autoincremento
+    nome VARCHAR(22) UNIQUE,  -- Coluna para o nome do cliente, com restrição de unicidade
+    limite INTEGER,  -- Coluna para o limite de crédito do cliente
+    montante INTEGER  -- Coluna para o montante do cliente
 );
 
+-- Cria a tabela 'transacoes' no esquema 'public'
 CREATE TABLE public.transacoes (
-    id SERIAL PRIMARY KEY,
-    cliente_id INTEGER REFERENCES public.clientes(id),
-    valor INTEGER,
-    realizada_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    descricao VARCHAR(10),
-    tipo CHAR(1)
+    id SERIAL PRIMARY KEY,  -- Coluna para o ID da transação, usando SERIAL para autoincremento
+    cliente_id INTEGER REFERENCES public.clientes(id),  -- Coluna para o ID do cliente, com restrição de chave estrangeira referenciando 'clientes'
+    valor INTEGER,  -- Coluna para o valor da transação
+    realizada_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Coluna para a data e hora da transação, usando a data e hora atual como padrão
+    descricao VARCHAR(10),  -- Coluna para a descrição da transação
+    tipo CHAR(1)  -- Coluna para o tipo de transação ('c' para crédito, 'd' para débito)
 );
 
+-- Cria a função 'inserir_credito' para inserir uma transação de crédito
 CREATE OR REPLACE FUNCTION inserir_credito(cliente_id INT, valor INT, descricao VARCHAR)
 RETURNS TABLE(novo_montante INT, cliente_limite INT) AS $$
 DECLARE
     var_novo_montante INT;
     var_cliente_limite INT;
 BEGIN
-
     -- Verifica se o cliente existe
     IF NOT EXISTS (SELECT 1 FROM public.clientes WHERE id = cliente_id) THEN
         RAISE EXCEPTION 'NOUSER';
@@ -50,9 +61,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-
-
+-- Cria a função 'inserir_debito' para inserir uma transação de débito
 CREATE OR REPLACE FUNCTION inserir_debito(cliente_id INT, valor INT, descricao VARCHAR)
 RETURNS TABLE(novo_montante INT, cliente_limite INT) AS $$
 DECLARE
@@ -90,15 +99,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Cria a função 'obter_ultimas_transacoes' para obter as últimas transações de um cliente
 CREATE OR REPLACE FUNCTION obter_ultimas_transacoes(var_cliente_id INT)
 RETURNS TABLE(valor INT, tipo CHAR, descricao VARCHAR, realizada_em TIMESTAMP, montante INT, limite INT) AS $$
 BEGIN
+    -- Verifica se o cliente existe
     IF NOT EXISTS (SELECT 1 FROM public.clientes WHERE id = var_cliente_id) THEN
         RAISE EXCEPTION 'NOUSER';
     END IF;
 
+    -- Obtém um bloqueio exclusivo para o cliente
     PERFORM pg_advisory_xact_lock(var_cliente_id);
 
+    -- Retorna as últimas transações do cliente
     RETURN QUERY 
     SELECT t.valor, t.tipo, t.descricao, t.realizada_em, c.montante, c.limite
     FROM public.transacoes t
@@ -109,13 +122,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-
-
+-- Cria índices para otimizar consultas na tabela 'transacoes'
 CREATE INDEX idx_transacoes_cliente_id ON public.transacoes(cliente_id);
-
 CREATE INDEX idx_transacoes_realizada_em ON public.transacoes(realizada_em);
 
+-- Insere dados iniciais na tabela 'clientes'
 DO $$
 BEGIN
   INSERT INTO public.clientes (nome, limite, montante)

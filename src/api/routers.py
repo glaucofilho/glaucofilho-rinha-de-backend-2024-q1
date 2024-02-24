@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from .endpoints.clientes import router as clientes_router
-from .endpoints.extrato import router as extrato_router
-from .endpoints.transacoes import router as transacoes_router
+from .endpoints_validados.clientes import router as clientes_router
+from .endpoints_validados.extrato import router as extrato_router
+from .endpoints_validados.transacoes import router as transacoes_router
 
 api_router = APIRouter()
 

@@ -31,4 +31,5 @@ if __name__ == "__main__":
         access_log=settings.acess_logs,
         log_level=settings.log_level.lower(),
         workers=settings.api_workers,
+        reload=settings.reload,
     )
