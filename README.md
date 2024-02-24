@@ -21,6 +21,10 @@ Submissão feita com:
 
 Email para contato: glaucolmf@hotmail.com
 
+## Resultados parciais
+
+<img src="./doc/image_1.png" width="1000" height="auto">
+
 ### Development Steps
 1. sudo python3 -m venv venv
 2. source venv/bin/activate
